@@ -1,15 +1,12 @@
 #include <iostream>
-//#include "shape.h"
+#include <assert.h>
+#include <cassert>
 using namespace std;
 
-class Shape{
+class Point2D{
     public:
-    int cx;
-    int cy;
-
-    int getlength(){
-        return max(width, height);
-    }
+    float cx;
+    float cy;
 
     protected: 
     int length;
@@ -18,124 +15,68 @@ class Shape{
 };
 
 
-class Rectangle : public Shape{
+class Rectangle : public Point2D{
     
     private:
-    int width;
-    int height;
-    int cx;
-    int cy;
+    float width;
+    float height;
+    float cx;
+    float cy;
     public:
-    //constructor
-    Rectangle(int cx_, int cy_, int wid, int hei){
+    Rectangle(float cx_, float cy_, float wid, float hei){
         cx = cx_; //the center of the rectangle x
         cy = cy_; //the center of the rectangle y
         width = wid;
         height = hei;
     }
 
+    //copy constructor
+    Rectangle(const Rectangle & obj){
+        //cout<<"Copy constructor invoked" <<endl;
+        cx = obj.cx;
+        cy = obj.cy; 
+        width = obj.width;
+        height = obj.height;
+    }
+
+    //assignemnt operator
+    Rectangle & operator = (const Rectangle & obj){
+        //cout<<"Assignment oprator invoked" <<endl;
+        cx = obj.cx;
+        cy = obj.cy; 
+        width = obj.width;
+        height = obj.height;
+    }
+
     /****function to check if a point is inside of a rectangle****/
     /****return true if it's inside****/
-    bool within(int x, int y){
-        if((2*x > 2*cx - width && 2*x<2*cx+width) && (2*y > 2*cy - height && 2*y<2*cy+height)){
+
+    bool within(float x, float y, Rectangle r){
+        if((2*x >= 2*r.cx - r.width && 2*x<=2*r.cx+width) && (2*y >= 2*r.cy - r.height && 2*y<=2*r.cy+r.height)){
             return true;
         }
         return false;
     }
-};
 
-class Circle : public Shape{
-    
-    private:
-    int cx;
-    int cy;
-    int radius;
-    public:
-    //constructor
-    Circle(int cx_, int cy_, int r){
-        cx = cx_;
-        cy = cy_;
-        radius = r;
-    }
+    // check if anypoint the points in r2 is within recgtangle r1
+    bool intersect(Rectangle r1, Rectangle r2){
+        float x_start = r2.cx - r2.width/2;
+        float y_start = r2.cy - r2.height/2;
 
-    /****function to check if a point is inside of a circle****/
-    /****return true if it's inside****/
-    bool within(int x, int y){
-        int dist = (x-cx)*(x-cx) + (y-cy)*(y-cy);
-        if(dist < radius*radius){
-            
-            return true;
+        for(float i = x_start; i<r2.cx + r2.width/2; i += 0.1){
+            for(float j= y_start; j<r2.cy+r2.height/2; j += 0.1){
+                if(r1.within(i,j,r1)){
+                    return true;
+                }
+            }
         }
         return false;
     }
 };
 
 
-/**********Test_Case below*************/
-bool TestWithin1()
-{
-    int x = 3; 
-    int y = 3;
-    Rectangle rect(0,0,4,4);
-    bool exp = false;
-    //Assert::AreEqual(rect.within(x,y), true);
-    bool temp = (rect.within(x,y) == exp);
-    return temp;
-}
-
-bool TestWithin2()
-{
-    //boundry
-    int x = 2; 
-    int y = 2;
-    Rectangle rect(0,0, 4,4);
-    bool exp = false;
-    bool temp = (rect.within(x,y) == exp);
-    return temp;
-}
-
-bool TestWithin3()
-{
-    int x = 7; 
-    int y = 9;
-    Rectangle rect(1,1, 5,5);
-    bool exp = false;
-    bool temp = (rect.within(x,y) == exp);
-    return temp;
-}
-
-bool TestWithin4()
-{
-    int x = 1; 
-    int y = 1;
-    Circle cir(0,0,1);
-    bool exp = false;
-    return cir.within(x,y) == exp;
-}
-
-bool TestWithin5()
-{
-    int x = 1; 
-    int y = 1;
-    Circle cir(0,0,2);
-    bool exp = true;
-    return cir.within(x,y) == exp;
-}
-
-bool TestWithin6()
-{
-    //boundry
-    int x = 3; 
-    int y = 4;
-    Circle cir(0,0,5);
-    bool exp = false;
-    return cir.within(x,y) == exp;
-}
-
-
-//main
 int main(){
-    int x, y;
+     float x, y;
     cout<<"===========Let's start with determining a point's location========="<<endl;
     cout<<"The x coordinate is: ";
     cin>>x;
@@ -143,31 +84,32 @@ int main(){
     cout<<"The y coordinate is: ";
     cin>>y;
 
-    Rectangle rect(2, 2, 4, 4);
-    cout<< "Is my point within the rectangle? "<<std::boolalpha <<rect.within(x,y)<<endl;  //boundery - false
+    Rectangle r0(2.0, 2.0, 4.0, 4.0);
     
-    Circle cir(1,1,1);
-    cout<< "Is my point within the Circle? "<<std::boolalpha <<cir.within(x,y)<<endl;
+    cout<< "Is my point within the rectangle r0(2.0, 2.0, 4.0, 4.0)?  "<<std::boolalpha <<r0.within(x,y,r0)<<endl; 
+    
+    /***********Test_Cases************/
+    cout<<"=======Secondly, Let's check if sample tests are passed?======"<<endl;
     system("pause");
+    Rectangle r1(2.0, 1.0, 4.0, 4.0);
+    assert(r1.within(2.1, 2.1, r1) > 0);
 
-    cout<<"=======Secondly, check if all the test cases for both rectangle and circle classes are passed?======"<<endl;
-    //check rectangle(all tests passed)
-    cout<<std::boolalpha<<TestWithin1()<<endl;
-    cout<<std::boolalpha<<TestWithin2()<<endl;
-    cout<<std::boolalpha<<TestWithin3()<<endl;
-    //check circle(all tests passed)
-    cout<<std::boolalpha<<TestWithin4()<<endl;
-    cout<<std::boolalpha<<TestWithin5()<<endl;
-    cout<<std::boolalpha<<TestWithin6()<<endl;
+    Rectangle r3(0.0, 0.0, 1.0, 1.0);
+    assert(r3.within(2.1, 2.1, r3) == 0);
+   
+    Rectangle r4(r3);
+    assert(r4.within(1.0, 1.0, r4) == 0);
 
-    system("pause");
-    cout<<"==============An example of using copy constructor=============" <<endl;
-    //assuming the point is at(2, 2) given a rectangle centered at ()
-    x = 2;
-    y = 2;
-    Rectangle r1(0, 0, 3, 3);
-    Rectangle r2(r1);  //copy constructor
-    cout<< "Is my point within the rectangle? "<<std::boolalpha <<r2.within(x,y)<<endl;
+    Rectangle r5 = (r3);
+    assert(r5.within(1.1, 1.0, r5) == 0);
+    
+    Rectangle r6(-2.0, -1.0, 2.0, 3.0);
+    assert(r1.intersect(r1, r3) > 0);
+    assert(r3.intersect(r4, r3) > 0);
+    assert(r6.intersect(r6, r5) == 0);
+    
+    cout<<"ALL TESTS PASSED!"<<endl;
+
     return 0;
 }
 
